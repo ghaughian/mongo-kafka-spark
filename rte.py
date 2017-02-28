@@ -10,7 +10,7 @@ from pyspark.streaming import StreamingContext
 from pyspark.streaming.kafka import KafkaUtils
 from confluent_kafka import Producer
 
-USAGE = "Usage: rte.py <zookeeper_host> <topic_to_consume> <tpoic_to_produce>"
+USAGE = "Usage: rte.py <zookeeper_host> <topic_to_consume> <topic_to_produce>"
 TIMER = 5
 
 producer = Producer({'bootstrap.servers': 'localhost'})
