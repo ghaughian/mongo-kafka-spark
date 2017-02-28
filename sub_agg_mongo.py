@@ -8,12 +8,8 @@ from   pymongo import MongoClient
 MIN_COMMIT_COUNT = 1000
 
 # extract command line args: host, port and database
-usage = "python analytics_consumer_mongo.py <MongoDB_Host> <MongoDB_Port> <MongoDB_Database>"
+USAGE = "python sub_agg_mongo.py <MongoDB_Host> <MongoDB_Port> <MongoDB_Database>"
 
-if len(sys.argv) < 4:
-    print "ERROR: Insufficient command line arguments supplied"
-    print "       usage: '" + usage + "'"
-    sys.exit(2)
 
 host  = sys.argv[1]
 port  = int(sys.argv[2])
@@ -51,12 +47,12 @@ def consume():
                 print('Received message: %s' % msg.value().decode('utf-8'))
                 msgs.append(json.loads(msg.value()))
                 msg_count += 1
-                if msg_count % MIN_COMMIT_COUNT == 0:
-                    consumer.commit(async=False)
             elif msg.error().code() != KafkaError._PARTITION_EOF:
                 print(msg.error())
             if i == 9: # aggregate 10 messages at a time
                 aggregation_basic(msgs)
+                if msg_count % MIN_COMMIT_COUNT == 0:
+                    consumer.commit(async=False)
                 i = 0
                 msgs=[]
             else:
@@ -65,11 +61,13 @@ def consume():
         c.close()
 
 def main():
+    if len(sys.argv) < 4:
+        print "ERROR: Insufficient command line arguments supplied"
+        print "       usage: '" + USAGE + "'"
+        sys.exit(2)
+    
     consume()
 
 if __name__ == "__main__": main()
 
 # TODO: Add more complex aggregations
-# TODO: Have `consume` operate on a timer rather than x number of records e.g:
-# import threading
-# threading.Timer(1, consume).start()

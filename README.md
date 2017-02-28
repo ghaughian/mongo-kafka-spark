@@ -1,6 +1,8 @@
 # mongo-kafka #
 
-A Kafka Producer extracts data from raw json file then transforms and publishes it downstream to a Kafka Consumer that performs aggregations on small batches of data before inserting the results into MongoDB.
+A Kafka Producer extracts json data from a file then transforms and publishes it downstream to a realtime analytics engine that aggregates the data using SparkStreaming before publishing it back onto another Kafka topic for consumption by MongoDB.
+
+Also illustrates how to aggregate batches of realtime data before inserting the results directly into MongoDB using Python DataFrames.
 
 ## To Run ##
 
@@ -12,9 +14,10 @@ A Kafka Producer extracts data from raw json file then transforms and publishes 
 
 `$KAFKA_HOME/bin/kafka-server-start.sh config/server.properties`
 
-##### create kafka topic #####
+##### create kafka topics #####
 
-`$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper localhost:2182 --replication-factor 1 --partitions 1 --topic mytopic`
+`$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test`
+`$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic agg_test`
 
 ##### start mongod instance #####
 
@@ -22,11 +25,15 @@ A Kafka Producer extracts data from raw json file then transforms and publishes 
 
 ##### start producer #####
 
-`python etl_producer.py`
+`python pub.py`
 
-##### start consumer #####
+##### start realtime analytics engine #####
 
-`python analytics_consumer_mongo.py localhost 27017 kafka`
+`spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.1.0 rte.py localhost:2181 test agg_test`
+
+##### start python aggregation consumer that publishes directly to MongoDB #####
+
+`python sub_agg_mongo.py localhost 27017 kafka`
 
 ## Python Dependencies ##
 - confluent_kafka
