@@ -1,7 +1,7 @@
 from confluent_kafka import Producer
 import json
 
-with open('data.json') as data_file:    
+with open('data/data.json') as data_file:    
     mydata = json.load(data_file)
 
 p = Producer({'bootstrap.servers': 'localhost'})
